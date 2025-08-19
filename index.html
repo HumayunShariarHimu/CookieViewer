@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Viewer</title>
+<style>
+/* HACKER DARK THEME */
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #0d0d0d;
+    color: #00ff00;
+    padding: 10px;
+    margin: 0;
+}
+h1 {
+    text-align: center;
+    color: #00ff99;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+#search {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #00ff00;
+    background: #0d0d0d;
+    color: #00ff00;
+    margin-bottom: 10px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #00ff00;
+    word-break: break-word;
+}
+th {
+    background: #001a00;
+    color: #00ff00;
+    text-align: left;
+}
+button {
+    background: #000000;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+button:hover {
+    background: #004400;
+}
+#copyAll {
+    width: 100%;
+    margin-bottom: 10px;
+}
+#notify {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #0f0;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+/* Responsive for mobile */
+@media (max-width: 600px){
+    th, td {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+    button {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>Cookie Viewer</h1>
+<input type="text" id="search" placeholder="Search cookies...">
+<button id="copyAll">Copy All Cookies</button>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="cookieTable"></tbody>
+</table>
+<div id="notify">Copied!</div>
+
+<script>
+// Notification function
+function showNotification(msg) {
+    const notify = document.getElementById('notify');
+    notify.textContent = msg;
+    notify.style.opacity = 1;
+    setTimeout(() => { notify.style.opacity = 0; }, 1000);
+}
+
+// Load cookies into table
+function loadCookies(filter="") {
+    const table = document.getElementById('cookieTable');
+    table.innerHTML = "";
+    const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
+
+    if(cookies.length === 0) {
+        table.innerHTML = "<tr><td colspan='3'>No cookies found or all cookies are HttpOnly.</td></tr>";
+        return;
+    }
+
+    cookies.forEach(cookie => {
+        const [name, value] = cookie.split('=');
+        if(filter && !cookie.toLowerCase().includes(filter.toLowerCase())) return;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${name}</td><td>${value}</td>`;
+        const actionTd = document.createElement('td');
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = "Copy";
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(cookie).then(() => showNotification("Copied!"));
+        };
+        actionTd.appendChild(copyBtn);
+        tr.appendChild(actionTd);
+        table.appendChild(tr);
+    });
+}
+
+// Copy all cookies
+document.getElementById('copyAll').addEventListener('click', () => {
+    const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c).join('\n');
+    if(cookies) {
+        navigator.clipboard.writeText(cookies).then(() => showNotification("All cookies copied!"));
+    } else {
+        showNotification("No cookies to copy");
+    }
+});
+
+// Search filter
+document.getElementById('search').addEventListener('input', e => {
+    loadCookies(e.target.value);
+});
+
+// Initial load
+loadCookies();
+</script>
+
+</body>
+</html>
